@@ -31,6 +31,8 @@ func main() {
 			deleteEventFromCalendar()
 		case 4:
 			calculateHowLongTillEvents()
+		case 5:
+			findEventInCalendar()
 		case 6:
 			printAllActions()
 		default:
@@ -84,11 +86,21 @@ func calculateHowLongTillEvents() {
 	calendar.GetEventsDifference()
 }
 
+func findEventInCalendar() {
+	scanner.Scan()
+	fmt.Println("Input the title of the event you want to find!")
+	scanner.Scan()
+	title := scanner.Text()
+
+	calendar.FindEvent(title)
+}
+
 //printAllActions - prints all the actions of the application
 func printAllActions() {
 	fmt.Println("1. Add new Event")
 	fmt.Println("2. Print all events")
 	fmt.Println("3. Delete event")
 	fmt.Println("4. How long till events")
+	fmt.Println("5. Find Event")
 	fmt.Println("6. Print all actions")
 }
