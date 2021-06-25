@@ -10,12 +10,16 @@ import (
 
 var calendar models.Calendar
 var scanner *bufio.Scanner
+var dataManager models.DataManager
 
 func main() {
 	scanner = bufio.NewScanner(os.Stdin)
 	fmt.Println("Welcome to Go Remind me!")
 	fmt.Println()
-	calendar.ReadEventsFromJson()
+	loadedEvents := dataManager.ReadEventsFromJson()
+	for _, event := range loadedEvents {
+		calendar.AddEvent(&event)
+	}
 	calendar.GetEventsDifference()
 	for {
 		fmt.Println("Please choose your next action (6 to print all actions)")
@@ -64,8 +68,21 @@ func addEventToCalendar() {
 		Info:  info,
 	}
 
+	err := event.ValidateEvent()
+	if err != nil {
+		fmt.Println(err.Error())
+		return
+	}
+
+	copyEvent := calendar.FindEvent(event.Title)
+	if copyEvent != nil {
+		fmt.Println("event with such title already exist")
+		return
+	}
+
 	calendar.AddEvent(event)
-	calendar.SaveEventsToJson()
+	events := calendar.GetEvents()
+	dataManager.SaveEventsToJson(&events)
 }
 
 //printAllCalendarEvents-prints all the events in the calendar
@@ -80,6 +97,8 @@ func deleteEventFromCalendar() {
 	scanner.Scan()
 	title := scanner.Text()
 	calendar.DeleteEvent(title)
+	events := calendar.GetEvents()
+	dataManager.SaveEventsToJson(&events)
 }
 
 func calculateHowLongTillEvents() {
@@ -92,7 +111,15 @@ func findEventInCalendar() {
 	scanner.Scan()
 	title := scanner.Text()
 
-	calendar.FindEvent(title)
+	foundEvent := calendar.FindEvent(title)
+	if foundEvent == nil {
+		fmt.Println("Couldn't find event!")
+		return
+	}
+	fmt.Println("-----------")
+	foundEvent.PrintEvent()
+	fmt.Println("-----------")
+
 }
 
 //printAllActions - prints all the actions of the application

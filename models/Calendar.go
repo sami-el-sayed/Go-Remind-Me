@@ -1,11 +1,9 @@
 package models
 
 import (
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"os"
 	"sort"
+	"strings"
 	"time"
 )
 
@@ -13,6 +11,11 @@ const filename = "events.json"
 
 type Calendar struct {
 	events []Event
+}
+
+//GetEvents  - returns Events Slice
+func (c *Calendar) GetEvents() []Event {
+	return c.events
 }
 
 //AddEvent - Appends event to calendar
@@ -80,50 +83,26 @@ func removeIndex(e []Event, index int) []Event {
 
 //DeleteEvent - deletes event in calendar based on the title
 func (c *Calendar) DeleteEvent(title string) {
+	deleted := false
 	for i := 0; i < len(c.events); i++ {
-		if c.events[i].Title == title {
+		if strings.EqualFold(c.events[i].Title, title) {
 			c.events = removeIndex(c.events, i)
+			deleted = true
 		}
 	}
+	if !deleted {
+		fmt.Println("Couldn't find event!")
+	}
+
 }
 
 //FindEvent - finds event in calendar
-func (c *Calendar) FindEvent(title string) {
-	found := false
+func (c *Calendar) FindEvent(title string) *Event {
 	for i := 0; i < len(c.events); i++ {
 		event := &c.events[i]
-		if title == event.Title {
-			found = true
-			fmt.Println()
-			fmt.Println("-------------")
-			event.PrintEvent()
-			fmt.Println("-------------")
-			fmt.Println()
-
+		if strings.EqualFold(title, event.Title) {
+			return event
 		}
 	}
-	if !found {
-		fmt.Println("Couldn't find event!")
-	}
-}
-
-//SaveEventsToJson - Saves events to Json file
-func (c *Calendar) SaveEventsToJson() {
-	file, _ := json.MarshalIndent(c.events, "", " ")
-	_ = ioutil.WriteFile(filename, file, 0644)
-}
-
-//ReadEventsFromJson - reads and loads events from json file
-func (c *Calendar) ReadEventsFromJson() {
-	file, _ := os.Open(filename)
-	byteValue, _ := ioutil.ReadAll(file)
-
-	var jsonEvents []Event
-
-	json.Unmarshal(byteValue, &jsonEvents)
-
-	for i := 0; i < len(jsonEvents); i++ {
-		c.events = append(c.events, jsonEvents[i])
-	}
-
+	return nil
 }
